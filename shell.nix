@@ -6,6 +6,7 @@ pkgs.mkShell {
     protoc-gen-go
     protoc-gen-go-grpc
     #go-protobuf
+    gnumake
   ];
 
   shellHook = ''
