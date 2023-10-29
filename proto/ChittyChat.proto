@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "github.com/marc9622/distributed-systems-handin3/proto";
+
+package proto;
+
+service ChittyChat {
+    rpc SayHi (Greeting) returns (Farewell);
+}
+
+message Greeting {
+    string clientName = 1;
+    string message = 2;
+}
+
+message Farewell {
+    string message = 1;
+}
