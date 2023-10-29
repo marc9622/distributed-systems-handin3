@@ -21,33 +21,35 @@ func (server *Server) SayHi(ctx context.Context, greeting *pb.Greeting) (*pb.Far
 }
 
 func main() {
-    var port = flag.String("port", "8080", "The server port");
-    flag.Parse();
+    var port = flag.String("port", "8080", "The port to listen on")
+    flag.Parse()
 
-    fmt.Println("Starting Server...");
+    fmt.Println("Starting Server...")
 
-    listener, err := net.Listen("tcp", fmt.Sprintf("localhost:%s", *port));
+    var listener, err = net.Listen("tcp", fmt.Sprintf("localhost:%s", *port))
     if err != nil {
-        fmt.Printf("Failed to listen: %v", err);
-        return;
+        fmt.Printf("Failed to listen: %v", err)
+        return
     }
 
     /* Settings up gRPC server */ {
-        grpcServer := grpc.NewServer()
+        var grpcServer = grpc.NewServer()
 
         server := &Server{
             port: *port,
         }
 
         pb.RegisterChittyChatServer(grpcServer, server)
-        fmt.Printf("Listening on port: %s\n", *port);
+        fmt.Printf("Listening on port: %s\n", *port)
 
-        err := grpcServer.Serve(listener)
+        var err = grpcServer.Serve(listener)
         if err != nil {
             fmt.Printf("Failed to serve: %s", err)
+            grpcServer.Stop()
             return
         }
     }
 
+    return
 }
 
