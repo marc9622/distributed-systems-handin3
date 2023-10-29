@@ -2,10 +2,16 @@
 pkgs.mkShell {
   buildInputs = with pkgs; [
     go
-    protoc-gen-go
-    protoc-gen-go-grpc
     protobuf
+    #protoc-gen-go
+    #protoc-gen-go-grpc
     #go-protobuf
   ];
+
+  shellHook = ''
+    export GOENV=$(pwd)/.go/.config/go/env
+    export GOMODCACHE=$(pwd)/.go/pkg/mod
+    export GOPATH=$(pwd)/.go
+  '';
 }
 
