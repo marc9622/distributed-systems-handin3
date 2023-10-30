@@ -18,15 +18,15 @@ type Server struct {
     mutex sync.Mutex
 }
 
-func (server *Server) SendChatMessage(ctx context.Context, greeting *pb.Message) (*pb.Response, error) {
+func (server *Server) SendChatMessage(ctx context.Context, message *pb.Message) (*pb.Response, error) {
 
     server.mutex.Lock()
     var oldLamport = server.lamport
-    var newLamport = max(server.lamport, greeting.Lamport) + 1
+    var newLamport = max(server.lamport, message.Lamport) + 1
     server.lamport = newLamport
     server.mutex.Unlock()
 
-    fmt.Printf("[Old: %d, Client: %d, New: %d] Received: %v\n", oldLamport, greeting.Lamport, newLamport, greeting.Message)
+    fmt.Printf("[Old: %d, Client: %d, New: %d] %s: %v\n", oldLamport, message.Lamport, newLamport, message.ClientName, message.Message)
 
     return &pb.Response{
         Message: "Bye bye",
