@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"sync"
 
 	pb "github.com/marc9622/distributed-systems-handin3/proto"
 	"google.golang.org/grpc"
@@ -13,11 +14,24 @@ import (
 type Server struct {
     pb.UnimplementedChittyChatServer
     port string
+    lamport int32
+    mutex sync.Mutex
 }
 
 func (server *Server) SayHi(ctx context.Context, greeting *pb.Greeting) (*pb.Farewell, error) {
-    fmt.Printf("Received: %v\n", greeting.Message)
-    return &pb.Farewell{Message: "Bye bye"}, nil
+
+    server.mutex.Lock()
+    var oldLamport = server.lamport
+    var newLamport = max(server.lamport, greeting.Lamport) + 1
+    server.lamport = newLamport
+    server.mutex.Unlock()
+
+    fmt.Printf("[Old: %d, Client: %d, New: %d] Received: %v\n", oldLamport, greeting.Lamport, newLamport, greeting.Message)
+
+    return &pb.Farewell{
+        Message: "Bye bye",
+        Lamport: server.lamport,
+    }, nil
 }
 
 func main() {
@@ -37,6 +51,7 @@ func main() {
 
         server := &Server{
             port: *port,
+            lamport: 0,
         }
 
         pb.RegisterChittyChatServer(grpcServer, server)

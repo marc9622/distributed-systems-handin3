@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
+	"os"
 
 	pb "github.com/marc9622/distributed-systems-handin3/proto"
 	"google.golang.org/grpc"
@@ -18,30 +20,50 @@ func main() {
     fmt.Printf("Starting client %s...\n", *name)
 
     var opt = grpc.WithTransportCredentials(insecure.NewCredentials())
-    var conn, err = grpc.Dial(fmt.Sprintf("localhost:%s", *port), opt)
-    if err != nil {
-        fmt.Printf("Failed to dial server: %s", err)
+    var conn, connErr = grpc.Dial(fmt.Sprintf("localhost:%s", *port), opt)
+    if connErr != nil {
+        fmt.Printf("Failed to dial server: %s", connErr)
         return
     }
     defer conn.Close()
 
-    /* Settings up gRPC client */ {
-        var client = pb.NewChittyChatClient(conn)
+    var client = pb.NewChittyChatClient(conn)
 
+    var lamport int32 = 0
+    var reader = bufio.NewReader(os.Stdin)
+
+    for {
+        var buffer []byte
         for {
-            var message string
-            fmt.Scanln(&message)
-
-            var ctx = context.Background()
-
-            var response, err = client.SayHi(ctx, &pb.Greeting{Message: message})
-            if err != nil {
-                fmt.Printf("Failed to send message: %s", err)
+            var read, isPrefix, readErr = reader.ReadLine()
+            if readErr != nil {
+                fmt.Printf("Failed to read line: %s", readErr)
                 return
             }
-
-            fmt.Printf("Response from server: %s\n", response.Message)
+            buffer = append(buffer, read...)
+            if !isPrefix {
+                break
+            }
         }
+
+        var ctx = context.Background()
+
+        var greeting = &pb.Greeting{
+            Message: string(buffer[0:min(len(buffer), 128)]),
+            Lamport: lamport,
+        }
+
+        var response, callErr = client.SayHi(ctx, greeting)
+        if callErr != nil {
+            fmt.Printf("Failed to send message: %s", callErr)
+            return
+        }
+
+        var oldLamport = lamport
+        var newLamport = max(lamport, response.Lamport) + 1
+        lamport = newLamport
+
+        fmt.Printf("[Current: %d, Server: %d, New: %d] Response: %s\n", oldLamport, response.Lamport, newLamport, response.Message)
     }
 }
 
