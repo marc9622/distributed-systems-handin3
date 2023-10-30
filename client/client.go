@@ -48,12 +48,12 @@ func main() {
 
         var ctx = context.Background()
 
-        var greeting = &pb.Greeting{
+        var greeting = &pb.Message{
             Message: string(buffer[0:min(len(buffer), 128)]),
             Lamport: lamport,
         }
 
-        var response, callErr = client.SayHi(ctx, greeting)
+        var response, callErr = client.SendChatMessage(ctx, greeting)
         if callErr != nil {
             fmt.Printf("Failed to send message: %s", callErr)
             return

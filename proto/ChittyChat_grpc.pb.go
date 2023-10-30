@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ChittyChat_SayHi_FullMethodName = "/proto.ChittyChat/SayHi"
+	ChittyChat_SendChatMessage_FullMethodName = "/proto.ChittyChat/SendChatMessage"
 )
 
 // ChittyChatClient is the client API for ChittyChat service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChittyChatClient interface {
-	SayHi(ctx context.Context, in *Greeting, opts ...grpc.CallOption) (*Farewell, error)
+	SendChatMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Response, error)
 }
 
 type chittyChatClient struct {
@@ -37,9 +37,9 @@ func NewChittyChatClient(cc grpc.ClientConnInterface) ChittyChatClient {
 	return &chittyChatClient{cc}
 }
 
-func (c *chittyChatClient) SayHi(ctx context.Context, in *Greeting, opts ...grpc.CallOption) (*Farewell, error) {
-	out := new(Farewell)
-	err := c.cc.Invoke(ctx, ChittyChat_SayHi_FullMethodName, in, out, opts...)
+func (c *chittyChatClient) SendChatMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, ChittyChat_SendChatMessage_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (c *chittyChatClient) SayHi(ctx context.Context, in *Greeting, opts ...grpc
 // All implementations must embed UnimplementedChittyChatServer
 // for forward compatibility
 type ChittyChatServer interface {
-	SayHi(context.Context, *Greeting) (*Farewell, error)
+	SendChatMessage(context.Context, *Message) (*Response, error)
 	mustEmbedUnimplementedChittyChatServer()
 }
 
@@ -58,8 +58,8 @@ type ChittyChatServer interface {
 type UnimplementedChittyChatServer struct {
 }
 
-func (UnimplementedChittyChatServer) SayHi(context.Context, *Greeting) (*Farewell, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHi not implemented")
+func (UnimplementedChittyChatServer) SendChatMessage(context.Context, *Message) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendChatMessage not implemented")
 }
 func (UnimplementedChittyChatServer) mustEmbedUnimplementedChittyChatServer() {}
 
@@ -74,20 +74,20 @@ func RegisterChittyChatServer(s grpc.ServiceRegistrar, srv ChittyChatServer) {
 	s.RegisterService(&ChittyChat_ServiceDesc, srv)
 }
 
-func _ChittyChat_SayHi_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Greeting)
+func _ChittyChat_SendChatMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChittyChatServer).SayHi(ctx, in)
+		return srv.(ChittyChatServer).SendChatMessage(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ChittyChat_SayHi_FullMethodName,
+		FullMethod: ChittyChat_SendChatMessage_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChittyChatServer).SayHi(ctx, req.(*Greeting))
+		return srv.(ChittyChatServer).SendChatMessage(ctx, req.(*Message))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -100,8 +100,8 @@ var ChittyChat_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ChittyChatServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SayHi",
-			Handler:    _ChittyChat_SayHi_Handler,
+			MethodName: "SendChatMessage",
+			Handler:    _ChittyChat_SendChatMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

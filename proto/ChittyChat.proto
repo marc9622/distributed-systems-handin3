@@ -5,14 +5,16 @@ option go_package = "github.com/marc9622/distributed-systems-handin3/proto";
 package proto;
 
 service ChittyChat {
-    rpc SayHi (Greeting) returns (Farewell);
+    rpc SendChatMessage (Message) returns (Response);
 }
 
-message Greeting {
+message Message {
     string clientName = 1;
     string message = 2;
+    int32 lamport = 3;
 }
 
-message Farewell {
+message Response {
     string message = 1;
+    int32 lamport = 2;
 }

@@ -18,7 +18,7 @@ type Server struct {
     mutex sync.Mutex
 }
 
-func (server *Server) SayHi(ctx context.Context, greeting *pb.Greeting) (*pb.Farewell, error) {
+func (server *Server) SendChatMessage(ctx context.Context, greeting *pb.Message) (*pb.Response, error) {
 
     server.mutex.Lock()
     var oldLamport = server.lamport
@@ -28,7 +28,7 @@ func (server *Server) SayHi(ctx context.Context, greeting *pb.Greeting) (*pb.Far
 
     fmt.Printf("[Old: %d, Client: %d, New: %d] Received: %v\n", oldLamport, greeting.Lamport, newLamport, greeting.Message)
 
-    return &pb.Farewell{
+    return &pb.Response{
         Message: "Bye bye",
         Lamport: server.lamport,
     }, nil
