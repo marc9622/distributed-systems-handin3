@@ -85,11 +85,11 @@ func main() {
                 return
             }
 
-			var oldLamport = lamport
+			//var oldLamport = lamport
 			var newLamport = max(lamport, reply.Lamport) + 1
 			lamport = newLamport
 
-			log.Printf("[Old: %d, Server: %d, New: %d] Server: %s\n", oldLamport, reply.Lamport, newLamport, reply.Log)
+			log.Printf("[Time: %d] Server: %s\n", /*oldLamport, reply.Lamport,*/ newLamport, reply.Log)
 			//fmt.Println(reply.Log)
         }
     }()

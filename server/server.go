@@ -100,7 +100,7 @@ func (server *Server) clientChatted(clientName string, clientLamport int32, mess
 }
 
 func (server *Server) logMessage(oldLamport, clientLamport, newLamport int32, clientName, message string) {
-    log.Printf("[Old: %d, Client: %d, New: %d] %s: %s", oldLamport, clientLamport, newLamport, clientName, message)
+    log.Printf("[Time: %d] %s: %s", /*oldLamport, clientLamport,*/ newLamport, clientName, message)
 }
 
 func (server *Server) sendMessageExcept(clientName string, clientLamport int32, message string) {
