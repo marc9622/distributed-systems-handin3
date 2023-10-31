@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"sync"
 
 	pb "github.com/marc9622/distributed-systems-handin3/proto"
 	"google.golang.org/grpc"
@@ -47,6 +48,17 @@ func main() {
 	var client = pb.NewChittyChatClient(conn)
 
 	var lamport int32 = 0
+    var lamportMutex sync.Mutex
+
+    var updateLamport = func(lamport int32) (int32, int32) {
+        lamportMutex.Lock()
+        var oldLamport = lamport
+        var newLamport = max(lamport, lamport) + 1
+        lamport = newLamport
+        lamportMutex.Unlock()
+        return oldLamport, newLamport
+    }
+
 	var reader = bufio.NewReader(os.Stdin)
     var closed = make(chan struct{})
 
@@ -85,11 +97,9 @@ func main() {
                 return
             }
 
-			//var oldLamport = lamport
-			var newLamport = max(lamport, reply.Lamport) + 1
-			lamport = newLamport
+            var oldLamport, newLamport = updateLamport(reply.Lamport)
 
-			log.Printf("[Time: %d] Server: %s\n", /*oldLamport, reply.Lamport,*/ newLamport, reply.Log)
+            log.Printf("[Prev: %d, Time: %d] Server: %s\n", oldLamport, /*reply.Lamport*/ newLamport, reply.Log)
 			fmt.Println(reply.Log)
         }
     }()
@@ -109,6 +119,8 @@ func main() {
 		}
 
 		var str = string(buffer[0:min(len(buffer), 128)])
+
+        updateLamport(0)
 
         // If message starts with '-' then it is a command
         if strings.HasPrefix(str, "-") {

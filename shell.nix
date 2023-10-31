@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> {} }:
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    go
+    #go
     protobuf
     protoc-gen-go
     protoc-gen-go-grpc
