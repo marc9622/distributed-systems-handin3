@@ -11,7 +11,8 @@ service ChittyChat {
 message Message {
     string clientName = 1;
     string message = 2;
-    int32 lamport = 3;
+    bool isCommand = 3;
+    int32 lamport = 4;
 }
 
 message ChatLog {

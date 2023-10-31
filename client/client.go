@@ -27,13 +27,13 @@ func main() {
         *name = fmt.Sprintf("%s-%d", *name, rand.Intn(1000))
     }
 
-	var file, fileErr = os.OpenFile("log/"+*logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	var file, fileErr = os.OpenFile("log/"+*logFile, os.O_CREATE|os.O_WRONLY|os.O_CREATE|os.O_SYNC, 0666)
 	if fileErr != nil {
 		log.Panicf("Failed to open log file: %s", fileErr)
 	}
 	defer file.Close()
 
-	log.SetOutput(file)
+	//log.SetOutput(file)
 
 	log.Printf("Starting client %s...\n", *name)
 
@@ -48,6 +48,7 @@ func main() {
 
 	var lamport int32 = 0
 	var reader = bufio.NewReader(os.Stdin)
+    var closed = make(chan struct{})
 
 	var ctx = context.Background()
 
@@ -61,6 +62,7 @@ func main() {
         var message = &pb.Message{
             ClientName: *name,
             Message: "",
+            IsCommand: false,
             Lamport: lamport,
         }
 
@@ -75,6 +77,7 @@ func main() {
         for {
             var reply, replyErr = stream.Recv()
             if replyErr == io.EOF {
+                closed <- struct{}{}
                 return
             }
             if replyErr != nil {
@@ -86,7 +89,7 @@ func main() {
 			lamport = newLamport
 
 			log.Printf("[Old: %d, Server: %d, New: %d] Server: %s\n", oldLamport, reply.Lamport, newLamport, reply.Log)
-			fmt.Println(reply.Log)
+			//fmt.Println(reply.Log)
         }
     }()
 
@@ -105,17 +108,51 @@ func main() {
 		}
 
 		var str = string(buffer[0:min(len(buffer), 128)])
-		if strings.HasPrefix(str, "-quit") {
-			var err = stream.CloseSend()
-			if err != nil {
-				log.Fatalf("Failed to close stream")
-			}
-			return
-		}
 
+        // If message starts with '-' then it is a command
+        if strings.HasPrefix(str, "-") {
+            if strings.HasPrefix(str, "-quit") {
+                var leaveMsg = &pb.Message{
+                    ClientName: *name,
+                    Message:    "-quit",
+                    IsCommand:  true,
+                    Lamport:    lamport,
+                }
+
+                var sendErr = stream.Send(leaveMsg)
+                if sendErr != nil {
+                    log.Panicf("Failed to send message")
+                }
+
+                <- closed
+
+                //var err = stream.CloseSend()
+                //if err != nil {
+                //    log.Fatalf("Failed to close stream")
+                //}
+
+                return
+            } else {
+                var aliveMsg = &pb.Message{
+                    ClientName: *name,
+                    Message:    "-",
+                    IsCommand:  true,
+                    Lamport:    lamport,
+                }
+
+                var sendErr = stream.Send(aliveMsg)
+                if sendErr != nil {
+                    log.Panicf("Failed to send message")
+                }
+                continue
+            }
+        }
+
+        // Send message
 		var message = &pb.Message{
 			ClientName: *name,
 			Message:    str,
+            IsCommand:  false,
 			Lamport:    lamport,
 		}
 
