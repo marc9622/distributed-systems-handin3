@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 
@@ -19,6 +20,11 @@ func main() {
 	var name = flag.String("name", "unnamed", "The name of the client")
 	var logFile = flag.String("log", "client.log", "The log file of the client")
 	flag.Parse()
+
+    // Append a random number if name is unnamed
+    if *name == "unnamed" {
+        *name = fmt.Sprintf("%s-%d", *name, rand.Intn(1000))
+    }
 
 	var file, fileErr = os.OpenFile("log/"+*logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if fileErr != nil {
