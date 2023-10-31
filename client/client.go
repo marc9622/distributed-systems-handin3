@@ -71,7 +71,7 @@ func main() {
         var newLamport = max(lamport, response.Lamport) + 1
         lamport = newLamport
 
-        log.Printf("[Old: %d, Server: %d, New: %d] Response: %s\n", oldLamport, response.Lamport, newLamport, response.Message)
+        log.Printf("[Old: %d, Server: %d, New: %d] Server: %s\n", oldLamport, response.Lamport, newLamport, response.Message)
     }
 }
 

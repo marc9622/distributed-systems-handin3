@@ -28,7 +28,8 @@ func (server *Server) SendChatMessage(ctx context.Context, message *pb.Message) 
     server.lamport = newLamport
     server.mutex.Unlock()
 
-    log.Printf("[Old: %d, Client: %d, New: %d] %s: %v\n", oldLamport, message.Lamport, newLamport, message.ClientName, message.Message)
+    log.Printf("[Old: %d, Client: %d, New: %d] %s: %s\n", oldLamport, message.Lamport, newLamport, message.ClientName, message.Message)
+    fmt.Printf("<%s>: %s", message.ClientName, message.Message)
 
     return &pb.Response{
         Message: "Bye bye",
