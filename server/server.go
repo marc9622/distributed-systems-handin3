@@ -15,18 +15,68 @@ import (
 
 type Server struct {
 	pb.UnimplementedChittyChatServer
-	port    string
-	lamport int32
-	mutex   sync.Mutex
-    connections []chan *pb.ChatLog
+	port         string
+
+	lamport      int32
+	lamportMutex sync.Mutex
+
+    // Go maps are not thread safe
+    connections  map[string]chan *pb.ChatLog
+    connectionsMutex sync.Mutex
+}
+
+func (server *Server) updateLamport(lamport int32) (int32, int32) {
+    server.lamportMutex.Lock()
+    var oldLamport = server.lamport
+    var newLamport = max(server.lamport, lamport) + 1
+    server.lamport = newLamport
+    server.lamportMutex.Unlock()
+    return oldLamport, newLamport
+}
+
+func (server *Server) insertChannel(clientName string, channel chan *pb.ChatLog) {
+    server.connectionsMutex.Lock()
+    server.connections[clientName] = channel
+    server.connectionsMutex.Unlock()
+}
+
+func (server *Server) sendToChannels(clientName string, chatLog *pb.ChatLog) {
+    server.connectionsMutex.Lock()
+    for name, channel := range server.connections {
+        if name == clientName {
+            continue
+        }
+
+        select {
+        case channel <- chatLog:
+        default:
+        }
+    }
+    server.connectionsMutex.Lock()
+}
+
+func (server *Server) deleteChannel(clientName string) {
+    server.connectionsMutex.Lock()
+    var channel = server.connections[clientName]
+    if channel != nil {
+        close(channel)
+    }
+    delete(server.connections, clientName)
+    server.connectionsMutex.Unlock()
+}
+
+type NoNameError struct{}
+func (e *NoNameError) Error() string {
+    return fmt.Sprintf("Client name is empty")
 }
 
 func (server *Server) SendChatMessages(stream pb.ChittyChat_SendChatMessagesServer) error {
-    var isFirstMessage = true
+    var clientName string = ""
 
 	for {
 		var msg, msgErr = stream.Recv()
 		if msgErr == io.EOF {
+            server.deleteChannel(clientName)
             fmt.Printf("%s has left the chat\n", msg.ClientName)
             return nil
 		}
@@ -34,26 +84,40 @@ func (server *Server) SendChatMessages(stream pb.ChittyChat_SendChatMessagesServ
 			return msgErr
 		}
 
-		server.mutex.Lock()
-		var oldLamport = server.lamport
-		var newLamport = max(server.lamport, msg.Lamport) + 1
-		server.lamport = newLamport
-		server.mutex.Unlock()
+        var oldLamport, newLamport = server.updateLamport(msg.Lamport)
 
 		log.Printf("[Old: %d, Client: %d, New: %d] %s: %s\n", oldLamport, msg.Lamport, newLamport, msg.ClientName, msg.Message)
         
-        if isFirstMessage {
-            isFirstMessage = false
+        if clientName == "" {
+
+            if msg.ClientName == "" {
+                log.Printf("Client name is empty")
+                return &NoNameError{}
+            }
+            clientName = msg.ClientName
+
+            var channel = make(chan *pb.ChatLog)
+            server.insertChannel(clientName, channel)
+
+            go func() {
+                for {
+                    var chatLog = <- channel
+                    stream.Send(chatLog)
+                }
+            }()
+
             fmt.Printf("%s has joined the chat\n", msg.ClientName)
-        } else {
+
+        } else { 
+
             var chatMsg = fmt.Sprintf("<%s>: %s", msg.ClientName, msg.Message)
             fmt.Println(chatMsg)
-
             var chatLog = &pb.ChatLog{
                 Log: chatMsg,
                 Lamport: newLamport,
             }
-            stream.Send(chatLog)
+
+            server.sendToChannels(clientName, chatLog)
         }
 	}
 }
@@ -85,6 +149,7 @@ func main() {
 		server := &Server{
 			port:    *port,
 			lamport: 0,
+            connections: make(map[string]chan *pb.ChatLog),
 		}
 
 		pb.RegisterChittyChatServer(grpcServer, server)
