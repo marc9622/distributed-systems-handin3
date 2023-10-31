@@ -4,7 +4,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"net"
+	"os"
 	"sync"
 
 	pb "github.com/marc9622/distributed-systems-handin3/proto"
@@ -26,7 +28,7 @@ func (server *Server) SendChatMessage(ctx context.Context, message *pb.Message) 
     server.lamport = newLamport
     server.mutex.Unlock()
 
-    fmt.Printf("[Old: %d, Client: %d, New: %d] %s: %v\n", oldLamport, message.Lamport, newLamport, message.ClientName, message.Message)
+    log.Printf("[Old: %d, Client: %d, New: %d] %s: %v\n", oldLamport, message.Lamport, newLamport, message.ClientName, message.Message)
 
     return &pb.Response{
         Message: "Bye bye",
@@ -36,14 +38,20 @@ func (server *Server) SendChatMessage(ctx context.Context, message *pb.Message) 
 
 func main() {
     var port = flag.String("port", "8080", "The port to listen on")
+    var logFile = flag.String("log", "server.log", "The log file of the server")
     flag.Parse()
 
-    fmt.Println("Starting Server...")
+    var file, fileErr = os.OpenFile("log/" + *logFile, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
+    if fileErr != nil {
+        log.Panicf("Failed to open log file: %s", fileErr)
+    }
+    defer file.Close()
+
+    log.Println("Starting Server...")
 
     var listener, err = net.Listen("tcp", fmt.Sprintf("localhost:%s", *port))
     if err != nil {
-        fmt.Printf("Failed to listen: %v", err)
-        return
+        log.Panicf("Failed to listen: %v", err)
     }
 
     /* Settings up gRPC server */ {
@@ -55,13 +63,12 @@ func main() {
         }
 
         pb.RegisterChittyChatServer(grpcServer, server)
-        fmt.Printf("Listening on port: %s\n", *port)
+        log.Printf("Listening on port: %s\n", *port)
 
         var err = grpcServer.Serve(listener)
         if err != nil {
-            fmt.Printf("Failed to serve: %s", err)
+            log.Panicf("Failed to serve: %s", err)
             grpcServer.Stop()
-            return
         }
     }
 

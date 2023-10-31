@@ -5,6 +5,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	pb "github.com/marc9622/distributed-systems-handin3/proto"
@@ -15,15 +16,21 @@ import (
 func main() {
     var port = flag.String("port", "8080", "The port of the server")
     var name = flag.String("name", "unnamed", "The name of the client")
+    var logFile = flag.String("log", "client.log", "The log file of the client")
     flag.Parse()
 
-    fmt.Printf("Starting client %s...\n", *name)
+    var file, fileErr = os.OpenFile("log/" + *logFile, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
+    if fileErr != nil {
+        log.Panicf("Failed to open log file: %s", fileErr)
+    }
+    defer file.Close()
+
+    log.Printf("Starting client %s...\n", *name)
 
     var opt = grpc.WithTransportCredentials(insecure.NewCredentials())
     var conn, connErr = grpc.Dial(fmt.Sprintf("localhost:%s", *port), opt)
     if connErr != nil {
-        fmt.Printf("Failed to dial server: %s", connErr)
-        return
+        log.Panicf("Failed to dial server: %s", connErr)
     }
     defer conn.Close()
 
@@ -37,8 +44,7 @@ func main() {
         for {
             var read, isPrefix, readErr = reader.ReadLine()
             if readErr != nil {
-                fmt.Printf("Failed to read line: %s", readErr)
-                return
+                log.Panicf("Failed to read line: %s", readErr)
             }
             buffer = append(buffer, read...)
             if !isPrefix {
@@ -56,15 +62,14 @@ func main() {
 
         var response, callErr = client.SendChatMessage(ctx, message)
         if callErr != nil {
-            fmt.Printf("Failed to send message: %s", callErr)
-            return
+            log.Panicf("Failed to send message: %s", callErr)
         }
 
         var oldLamport = lamport
         var newLamport = max(lamport, response.Lamport) + 1
         lamport = newLamport
 
-        fmt.Printf("[Current: %d, Server: %d, New: %d] Response: %s\n", oldLamport, response.Lamport, newLamport, response.Message)
+        log.Printf("[Current: %d, Server: %d, New: %d] Response: %s\n", oldLamport, response.Lamport, newLamport, response.Message)
     }
 }
 
