@@ -2,3 +2,10 @@
 2023/10/31 14:44:38 Starting client unnamed...
 2023/10/31 14:44:50 [Current: 0, Server: 1, New: 2] Response: Bye bye
 2023/10/31 14:44:53 [Current: 2, Server: 3, New: 4] Response: Bye bye
+2023/10/31 14:49:47 Starting client unnamed...
+2023/10/31 14:49:59 [Old: 0, Server: 1, New: 2] Server: Bye bye
+2023/10/31 14:50:02 [Old: 2, Server: 3, New: 4] Server: Bye bye
+2023/10/31 14:50:02 [Old: 4, Server: 5, New: 6] Server: Bye bye
+2023/10/31 14:50:02 [Old: 6, Server: 7, New: 8] Server: Bye bye
+2023/10/31 14:50:03 [Old: 8, Server: 9, New: 10] Server: Bye bye
+2023/10/31 14:50:03 [Old: 10, Server: 11, New: 12] Server: Bye bye
