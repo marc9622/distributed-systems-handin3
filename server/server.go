@@ -46,6 +46,8 @@ func main() {
         log.Panicf("Failed to open log file: %s", fileErr)
     }
     defer file.Close()
+    
+    log.SetOutput(file)
 
     log.Println("Starting Server...")
 
@@ -67,8 +69,8 @@ func main() {
 
         var err = grpcServer.Serve(listener)
         if err != nil {
-            log.Panicf("Failed to serve: %s", err)
             grpcServer.Stop()
+            log.Panicf("Failed to serve: %s", err)
         }
     }
 
