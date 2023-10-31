@@ -18,29 +18,43 @@ type Server struct {
 	port    string
 	lamport int32
 	mutex   sync.Mutex
+    connections []chan *pb.ChatLog
 }
 
 func (server *Server) SendChatMessages(stream pb.ChittyChat_SendChatMessagesServer) error {
+    var isFirstMessage = true
+
 	for {
-		var message, err = stream.Recv()
-		if err == io.EOF {
-			return stream.SendAndClose(&pb.ChatLog{
-				Log:     "Bye bye",
-				Lamport: server.lamport,
-			})
+		var msg, msgErr = stream.Recv()
+		if msgErr == io.EOF {
+            fmt.Printf("%s has left the chat\n", msg.ClientName)
+            return nil
 		}
-		if err != nil {
-			return err
+		if msgErr != nil {
+			return msgErr
 		}
 
 		server.mutex.Lock()
 		var oldLamport = server.lamport
-		var newLamport = max(server.lamport, message.Lamport) + 1
+		var newLamport = max(server.lamport, msg.Lamport) + 1
 		server.lamport = newLamport
 		server.mutex.Unlock()
 
-		log.Printf("[Old: %d, Client: %d, New: %d] %s: %s\n", oldLamport, message.Lamport, newLamport, message.ClientName, message.Message)
-		fmt.Printf("<%s>: %s\n", message.ClientName, message.Message)
+		log.Printf("[Old: %d, Client: %d, New: %d] %s: %s\n", oldLamport, msg.Lamport, newLamport, msg.ClientName, msg.Message)
+        
+        if isFirstMessage {
+            isFirstMessage = false
+            fmt.Printf("%s has joined the chat\n", msg.ClientName)
+        } else {
+            var chatMsg = fmt.Sprintf("<%s>: %s", msg.ClientName, msg.Message)
+            fmt.Println(chatMsg)
+
+            var chatLog = &pb.ChatLog{
+                Log: chatMsg,
+                Lamport: newLamport,
+            }
+            stream.Send(chatLog)
+        }
 	}
 }
 

@@ -5,7 +5,7 @@ option go_package = "github.com/marc9622/distributed-systems-handin3/proto";
 package proto;
 
 service ChittyChat {
-    rpc SendChatMessages (stream Message) returns (ChatLog);
+    rpc SendChatMessages (stream Message) returns (stream ChatLog);
 }
 
 message Message {

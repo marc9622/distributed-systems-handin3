@@ -5,6 +5,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"os"
@@ -55,6 +56,41 @@ func main() {
 		log.Panicf("Failed to send message: %s", streamErr)
 	}
 
+    // Send join message
+    {
+        var message = &pb.Message{
+            ClientName: *name,
+            Message: "",
+            Lamport: lamport,
+        }
+
+        var sendErr = stream.Send(message)
+        if sendErr != nil {
+            log.Panicf("Failed to send message")
+        }
+    }
+
+    // Make thread that reads chat logs from server
+    go func() {
+        for {
+            var reply, replyErr = stream.Recv()
+            if replyErr == io.EOF {
+                return
+            }
+            if replyErr != nil {
+                log.Fatalf("Failed to receive message")
+            }
+
+			var oldLamport = lamport
+			var newLamport = max(lamport, reply.Lamport) + 1
+			lamport = newLamport
+
+			log.Printf("[Old: %d, Server: %d, New: %d] Server: %s\n", oldLamport, reply.Lamport, newLamport, reply.Log)
+			fmt.Println(reply.Log)
+        }
+    }()
+
+    // Send messages to server
 	for {
 		var buffer []byte
 		for {
@@ -70,18 +106,10 @@ func main() {
 
 		var str = string(buffer[0:min(len(buffer), 128)])
 		if strings.HasPrefix(str, "-quit") {
-			var reply, replyErr = stream.CloseAndRecv()
-			if replyErr != nil {
-				log.Panicf("Failed to get response")
+			var err = stream.CloseSend()
+			if err != nil {
+				log.Fatalf("Failed to close stream")
 			}
-
-			var oldLamport = lamport
-			var newLamport = max(lamport, reply.Lamport) + 1
-			lamport = newLamport
-
-			log.Printf("[Old: %d, Server: %d, New: %d] Server: %s\n", oldLamport, reply.Lamport, newLamport, reply.Log)
-			fmt.Println(reply.Log)
-
 			return
 		}
 
@@ -95,6 +123,5 @@ func main() {
 		if sendErr != nil {
 			log.Panicf("Failed to send message")
 		}
-
 	}
 }
