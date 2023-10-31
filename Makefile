@@ -1,12 +1,10 @@
 
 bin/server: server/server.go
 	@echo "Building server.go..."
-	@mkdir -p bin
 	@go build -o bin/server server/server.go
 
 bin/client: client/client.go
 	@echo "Building client.go..."
-	@mkdir -p bin
 	@go build -o bin/client client/client.go
 
 build: bin/server bin/client

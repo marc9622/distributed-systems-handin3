@@ -9,3 +9,8 @@
 2023/10/31 14:50:02 [Old: 6, Server: 7, New: 8] Server: Bye bye
 2023/10/31 14:50:03 [Old: 8, Server: 9, New: 10] Server: Bye bye
 2023/10/31 14:50:03 [Old: 10, Server: 11, New: 12] Server: Bye bye
+2023/10/31 15:04:27 Starting client unnamed...
+2023/10/31 15:04:55 [Old: 0, Server: 1, New: 2] Server: Bye bye
+2023/10/31 15:06:53 Starting client daniel...
+2023/10/31 15:07:00 [Old: 0, Server: 2, New: 3] Server: Bye bye
+2023/10/31 15:07:26 Failed to read line: EOF
