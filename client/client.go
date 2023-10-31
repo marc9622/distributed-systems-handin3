@@ -90,7 +90,7 @@ func main() {
 			lamport = newLamport
 
 			log.Printf("[Time: %d] Server: %s\n", /*oldLamport, reply.Lamport,*/ newLamport, reply.Log)
-			//fmt.Println(reply.Log)
+			fmt.Println(reply.Log)
         }
     }()
 
