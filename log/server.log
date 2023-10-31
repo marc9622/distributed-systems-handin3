@@ -1,21 +1,9 @@
-2023/10/31 14:44:41 Starting Server...
-2023/10/31 14:44:41 Listening on port: 8080
-2023/10/31 14:44:50 [Old: 0, Client: 0, New: 1] unnamed: hello
-2023/10/31 14:44:53 [Old: 1, Client: 2, New: 3] unnamed: there
-2023/10/31 14:49:51 Starting Server...
-2023/10/31 14:49:51 Listening on port: 8080
-2023/10/31 14:49:59 [Old: 0, Client: 0, New: 1] unnamed: a
-2023/10/31 14:50:02 [Old: 1, Client: 2, New: 3] unnamed: a
-2023/10/31 14:50:02 [Old: 3, Client: 4, New: 5] unnamed: a
-2023/10/31 14:50:02 [Old: 5, Client: 6, New: 7] unnamed: a
-2023/10/31 14:50:03 [Old: 7, Client: 8, New: 9] unnamed: a
-2023/10/31 14:50:03 [Old: 9, Client: 10, New: 11] unnamed: a
-2023/10/31 15:04:51 Starting Server...
-2023/10/31 15:04:51 Listening on port: 8080
-2023/10/31 15:04:55 [Old: 0, Client: 0, New: 1] unnamed: Testing
-2023/10/31 15:07:00 [Old: 1, Client: 0, New: 2] daniel: teesting
-2023/10/31 15:54:47 Starting Server...
-2023/10/31 15:54:47 Listening on port: 8080
-2023/10/31 15:55:11 [Old: 0, Client: 0, New: 1] unnamed: AA
-2023/10/31 15:55:13 [Old: 1, Client: 2, New: 3] unnamed: adsd
-2023/10/31 15:55:14 [Old: 3, Client: 4, New: 5] unnamed: ss
+2023/10/31 23:15:32 Starting Server...
+2023/10/31 23:15:32 Listening on port: 8080
+2023/10/31 23:15:35 [Time: 1] Client 1: Client 1 has joined the chat
+2023/10/31 23:15:37 [Time: 2] Client 1: <Client 1>: message a
+2023/10/31 23:15:39 [Time: 3] Client 2: Client 2 has joined the chat
+2023/10/31 23:15:44 [Time: 5] Client 1: <Client 1>: message b
+2023/10/31 23:15:55 [Time: 7] Client 1: Client 1 has left the chat
+2023/10/31 23:15:58 [Time: 9] Client 2: <Client 2>: message c
+2023/10/31 23:16:03 [Time: 11] Client 2: Client 2 has left the chat

@@ -33,7 +33,7 @@ func main() {
 	}
 	defer file.Close()
 
-	//log.SetOutput(file)
+	log.SetOutput(file)
 
 	log.Printf("Starting client %s...\n", *name)
 

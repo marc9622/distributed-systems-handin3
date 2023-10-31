@@ -76,7 +76,7 @@ func (server *Server) clientJoin(clientName string, clientLamport int32) (chan s
     var closed = make(chan struct{})
     server.insertChannelSync(clientName, channel)
     var message = fmt.Sprintf("%s has joined the chat", clientName)
-    //fmt.Println(message)
+    fmt.Println(message)
     server.sendMessageExcept(clientName, clientLamport, message)
     return channel, closed
 }
@@ -89,13 +89,13 @@ func (server *Server) clientLeave(clientName string, clientLamport int32, closed
     }
     server.deleteChannelSync(clientName)
     var message = fmt.Sprintf("%s has left the chat", clientName)
-    //fmt.Println(message)
+    fmt.Println(message)
     server.sendMessageExcept(clientName, clientLamport, message)
 }
 
 func (server *Server) clientChatted(clientName string, clientLamport int32, message string) {
     var msg = fmt.Sprintf("<%s>: %s", clientName, message)
-    //fmt.Println(msg)
+    fmt.Println(msg)
     server.sendMessageExcept(clientName, clientLamport, msg)
 }
 
@@ -187,7 +187,7 @@ func main() {
 	}
 	defer file.Close()
 
-	//log.SetOutput(file)
+	log.SetOutput(file)
 
 	log.Println("Starting Server...")
 
