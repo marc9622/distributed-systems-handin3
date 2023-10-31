@@ -82,6 +82,7 @@ func main() {
             }
             if replyErr != nil {
                 log.Fatalf("Failed to receive message")
+                return
             }
 
 			var oldLamport = lamport

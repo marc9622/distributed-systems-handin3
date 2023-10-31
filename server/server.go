@@ -117,7 +117,7 @@ func (e *NoNameError) Error() string {
 func (server *Server) SendChatMessages(stream pb.ChittyChat_SendChatMessagesServer) error {
     var clientName string = ""
     var channel chan string = nil
-    //var closed chan struct{} = nil
+    var closed chan struct{} = nil
 
 	for {
 		var msg, msgErr = stream.Recv()
@@ -149,7 +149,7 @@ func (server *Server) SendChatMessages(stream pb.ChittyChat_SendChatMessagesServ
             }
             clientName = msg.ClientName
 
-            channel, _/*closed*/ = server.clientJoin(clientName, msg.Lamport)
+            channel, closed = server.clientJoin(clientName, msg.Lamport)
 
             go func() {
                 for {
@@ -163,8 +163,8 @@ func (server *Server) SendChatMessages(stream pb.ChittyChat_SendChatMessagesServ
                         if sendErr != nil {
                             return
                         }
-                    //case <- closed: // Will receive when client leaves
-                    //    return
+                    case <- closed: // Will receive when client leaves
+                        return
                     }
                 }
             }()
